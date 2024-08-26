@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Keyword Search</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .modal-content {
+            width: 50%;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+            Open Keyword Search
+        </button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Keyword Search</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="searchForm">
+                        <div class="form-group">
+                            <label for="urlInput">URL:</label>
+                            <input type="text" class="form-control" id="urlInput" placeholder="Enter URL" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="keywordInput">Keyword:</label>
+                            <input type="text" class="form-control" id="keywordInput" placeholder="Enter Keyword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                    <div id="searchResult"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const url = $('#urlInput').val();
+                const keyword = $('#keywordInput').val();
+                
+                $.ajax({
+                    url: '/search',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({url: url, keyword: keyword}),
+                    success: function(response) {
+                        if (response.error) {
+                            $('#searchResult').html(`<p>Error: ${response.error}</p>`);
+                        } else {
+                            let resultsHtml = '<h5>Results:</h5><ul>';
+                            response.results.forEach(result => {
+                                resultsHtml += `<li>${result}</li>`;
+                            });
+                            resultsHtml += '</ul>';
+                            resultsHtml += `<p>The keyword "${keyword}" appears ${response.count} times.</p>`;
+                            $('#searchResult').html(resultsHtml);
+                        }
+                    },
+                    error: function() {
+                        $('#searchResult').html('<p>Error: Failed to connect to server.</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
